@@ -22,6 +22,8 @@ const userNameElem = document.querySelector(".user-name");
 const userAvatarElem = document.querySelector(".user-avatar");
 
 const postsWrapper = document.querySelector(".posts");
+const buttonNewPost = document.querySelector(".button-new-post");
+const addPostElem = document.querySelector(".add-post");
 
 const listUsers = [
   {
@@ -29,12 +31,16 @@ const listUsers = [
     email: "lol@lol.ru",
     password: "lol",
     displayName: "superLol",
+    photo:
+      "https://picjumbo.com/wp-content/uploads/alone-with-his-thoughts-1080x720.jpg",
   },
   {
     id: "02",
     email: "lol2@lol.ru",
     password: "lol2",
     displayName: "superLol2",
+    photo:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQl-U2Bu1dOVzO3EEXdihzV75tnkbO5Y9GVWA&usqp=CAU",
   },
 ];
 
@@ -48,14 +54,18 @@ const setUsers = {
     const user = this.getUser(email);
     if (user && user.password === password) {
       this.authorizedUser(user);
-      handler();
+      if (handler) {
+        handler();
+      }
     } else {
       alert("Пользователь с такими данными не найден");
     }
   },
   logOut(handler) {
     this.user = null;
-    handler();
+    if (handler) {
+      handler();
+    }
   },
   signUp(email, password, handler) {
     if (!regExpValidEmail.test(email)) {
@@ -74,7 +84,9 @@ const setUsers = {
       };
       listUsers.push(user);
       this.authorizedUser(user);
-      handler();
+      if (handler) {
+        handler();
+      }
     } else {
       alert("Пользователь с таким email уже зарегистрирован!");
     }
@@ -93,7 +105,9 @@ const setUsers = {
       this.user.photo = userPhoto;
     }
 
-    handler();
+    if (handler) {
+      handler();
+    }
   },
 };
 
@@ -104,7 +118,11 @@ const setPosts = {
       text:
         "Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Языком что рот маленький реторический вершину текстов обеспечивает гор свой назад решила сбить маленькая дорогу жизни рукопись ему букв деревни предложения, ручеек залетают продолжил парадигматическая? Но языком сих пустился, запятой своего его снова решила меня вопроса моей своих пояс коварный, власти диких правилами напоивший они текстов ipsum первую подпоясал? Лучше, щеке подпоясал приставка большого курсивных на берегу своего? Злых, составитель агентство что вопроса ведущими о решила одна алфавит!",
       tags: ["новое", "мое", "случайность"],
-      author: "lol@lol.ru",
+      author: {
+        displayName: "lol",
+        photo:
+          "https://picjumbo.com/wp-content/uploads/alone-with-his-thoughts-1080x720.jpg",
+      },
       date: "11.11.2020, 20:54:00",
       like: 14,
       comments: 20,
@@ -114,7 +132,11 @@ const setPosts = {
       text:
         "Lorem ipsum dolor, sit amet consectetur adipisicing elit. Aperiam libero mollitia aut harum doloremque, eos aspernatur a tenetur veniam inventore, aliquid ipsum! Consequuntur doloribus pariatur ratione reiciendis distinctio ducimus corrupti magnam, modi, libero non ipsa porro iusto optio quisquam aliquid exercitationem illum deserunt sint. Molestiae, porro? Quam ex eos voluptatum facere, veritatis minus suscipit, eaque minima sapiente dolorem illo molestiae?",
       tags: ["новое", "горячее"],
-      author: "lol2@lol.ru",
+      author: {
+        displayName: "lol",
+        photo:
+          "https://picjumbo.com/wp-content/uploads/alone-with-his-thoughts-1080x720.jpg",
+      },
       date: "11.11.2020, 20:53:00",
       like: 11,
       comments: 3,
@@ -124,13 +146,34 @@ const setPosts = {
       text:
         "Далеко-далеко за словесными горами в стране гласных и согласных живут рыбные тексты. Языком что рот маленький реторический вершину текстов обеспечивает гор свой назад решила сбить маленькая дорогу жизни рукопись ему букв деревни предложения, ручеек залетают продолжил парадигматическая? Но языком сих пустился, запятой своего его снова решила меня вопроса моей своих пояс коварный, власти диких правилами напоивший они текстов ipsum первую подпоясал? Лучше, щеке подпоясал приставка большого курсивных на берегу своего? Злых, составитель агентство что вопроса ведущими о решила одна алфавит!",
       tags: ["свежее"],
-      author: "lol@lol.ru",
+      author: {
+        displayName: "lol2",
+        photo:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQl-U2Bu1dOVzO3EEXdihzV75tnkbO5Y9GVWA&usqp=CAU",
+      },
       date: "11.11.2020, 20:51:00",
       like: 40,
       comments: 1,
     },
   ],
-
+  addPost(title, text, tags, handler) {
+    const user = setUsers.user;
+    this.allPosts.unshift({
+      title,
+      text,
+      tags: tags.split(",").map((tag) => tag.trim()),
+      author: {
+        displayName: setUsers.user.displayName,
+        photo: setUsers.user.photo,
+      },
+      date: new Date().toLocaleString(),
+      like: 0,
+      comments: 0,
+    });
+    if (handler) {
+      handler();
+    }
+  },
 };
 
 const toggleAuthDom = () => {
@@ -141,23 +184,33 @@ const toggleAuthDom = () => {
     userElem.style.display = "";
     userNameElem.textContent = user.displayName;
     userAvatarElem.src = user.photo || userAvatarElem.src;
+    buttonNewPost.classList.add("visible");
   } else {
     loginElem.style.display = "";
     userElem.style.display = "none";
+    buttonNewPost.classList.remove("visible");
+    addPostElem.classList.remove("visible");
+    postsWrapper.classList.add("visible");
   }
 };
 
-const showAllPosts = () => {
+const showAddPost = () => {
+  addPostElem.classList.add("visible");
+  postsWrapper.classList.remove("visible");
+};
 
+const showAllPosts = () => {
   let postsHTML = "";
-  setPosts.allPosts.forEach((post) => {
+
+  setPosts.allPosts.forEach(
+    ({ title, text, tags, comments, like, author, date }) => {
       postsHTML += `
       <section class="post">
           <div class="post-body">
-            <h2 class="post-title">${post.title}</h2>
-            <p class="post-text">${post.text}</p>
+            <h2 class="post-title">${title}</h2>
+            <p class="post-text">${text}</p>
             <div class="tags">
-              <a href="#" class="tag">${post.tags}</a>
+            ${tags.map((tag) => `<a href="#" class="tag">#${tag}</a>`)}
             </div>
           </div>
           <div class="post-footer">
@@ -166,13 +219,13 @@ const showAllPosts = () => {
                 <svg width="19" height="20" class="icon icon-like">
                   <use xlink:href="img/icons.svg#like"></use>
                 </svg>
-                <span class="likes-counter">${post.like}</span>
+                <span class="likes-counter">${like}</span>
               </button>
               <button class="post-button comments">
                 <svg width="21" height="21" class="icon icon-comment">
                   <use xlink:href="img/icons.svg#comment"></use>
                 </svg>
-                <span class="comments-counter">${post.comments}</span>
+                <span class="comments-counter">${comments}</span>
               </button>
               <button class="post-button save">
                 <svg width="19" height="19" class="icon icon-save">
@@ -187,19 +240,24 @@ const showAllPosts = () => {
             </div>
             <div class="post-author">
               <div class="author-about">
-                <a href="#" class="author-username">arteislamov</a>
-                <span class="post-time">${post.date}</span>
+                <a href="#" class="author-username">${author.displayName}</a>
+                <span class="post-time">${date}</span>
               </div>
-              <a href="#" class="author-link"
-                ><img src="img/avatar.jpeg" alt="avatar" class="author-avatar"
+              <a href="#" class="author-link"><img src=${
+                author.photo || "img/avatar.jpeg"
+              } alt="avatar" class="author-avatar"
               /></a>
             </div>
           </div>
         </section>
       `;
-  });
+    }
+  );
 
   postsWrapper.innerHTML = postsHTML;
+
+  addPostElem.classList.remove("visible");
+  postsWrapper.classList.add("visible");
 };
 
 const init = () => {
@@ -232,9 +290,6 @@ const init = () => {
     editContainer.classList.remove("visible");
   });
 
-  showAllPosts();
-  toggleAuthDom();
-
   // отслеживаем клик по кнопке меню и запускаем функцию
   menuToggle.addEventListener("click", function (event) {
     // отменяем стандартное поведение ссылки
@@ -242,6 +297,32 @@ const init = () => {
     // вешаем класс на меню, когда кликнули по кнопке меню
     menu.classList.toggle("visible");
   });
+
+  buttonNewPost.addEventListener("click", (event) => {
+    event.preventDefault();
+    showAddPost();
+  });
+
+  addPostElem.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const { title, text, tags } = addPostElem.elements;
+    console.log(title, text, tags);
+    if (title.value.length < 6) {
+      alert("Слишком короткий заголовок");
+      return;
+    }
+    if (text.value.length < 50) {
+      alert("Слишком короткий пост");
+      return;
+    }
+
+    setPosts.addPost(title.value, text.value, tags.value, showAllPosts);
+    addPostElem.classList.remove("visible");
+    addPostElem.reset();
+  });
+
+  showAllPosts();
+  toggleAuthDom();
 };
 
 document.addEventListener("DOMContentLoaded", init);
